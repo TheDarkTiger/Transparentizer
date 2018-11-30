@@ -1,0 +1,5 @@
+
+
+
+[_]	Med	Fix the gif export
+[_]	Low	Fix the window size

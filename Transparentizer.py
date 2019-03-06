@@ -7,7 +7,18 @@
 from PIL import Image, ImageDraw
 import Tkinter as Tk
 import tkFileDialog
+import tkColorChooser
 
+ALPHA_COLOR = "#FF00FF"
+
+def changeAlphaColor():
+	global ALPHA_COLOR
+	
+	color = tkColorChooser.askcolor()
+	ALPHA_COLOR = color[1]
+	b_color.configure( background=ALPHA_COLOR )
+	print ALPHA_COLOR
+	
 
 def inputFileChoose ():
 	filename = tkFileDialog.askopenfilename()
@@ -16,21 +27,31 @@ def inputFileChoose ():
 		inputFile.set(filename)
 
 def transparentize() :
+	global ALPHA_COLOR
 	
-	replacement = ( (255,0,255), (255,0,255,0) )
+	# Default : pink
+	replacement = [ [255,0,255], (255, 0, 255, 0) ]
+	
+	# Load the asked color
+	replacement[0][0] = int( ALPHA_COLOR[1:3], 16 )
+	replacement[0][1] = int( ALPHA_COLOR[3:5], 16 )
+	replacement[0][2] = int( ALPHA_COLOR[5:7], 16 )
+	
+	replacement[1] = ( replacement[0][0], replacement[0][1], replacement[0][2], 0 )
+	
+	print replacement
+	
 	
 	imageName = inputFile.get()
 	print inputFile.get()
 	
-	#------------------------------------------------------------------------------
-	# Input image
 	
+	# Input image
 	img = Image.open(imageName)
 	img = img.convert("RGBA")
 	
-	#------------------------------------------------------------------------------
-	# Color switch
 	
+	# Color switch
 	datas = img.getdata()
 	
 	newdata = []
@@ -41,6 +62,7 @@ def transparentize() :
 			newdata.append( item )
 		
 	
+	# Save
 	img.putdata(newdata)
 	if toGif.get() == False :
 		img.save(imageName+"_Alpha.png", 'PNG')
@@ -49,15 +71,16 @@ def transparentize() :
 		img.save(imageName+"_Alpha.gif", 'GIF', transparency=0)
 	
 
+#===============================================================================
+# GUI
 
 window = Tk.Tk()
 print "Main"
 p_main = Tk.PanedWindow(window, orient="vertical")
 p_main.pack(side="top", expand="yes", fill="both", padx=2, pady=2)
 
-#===============================================================================
+
 # Container for the file
-print "File container"
 lf_files = Tk.LabelFrame(p_main, text="Files", padx=2, pady=2)
 p_main.add(lf_files)
 
@@ -69,20 +92,40 @@ i_inputFile.grid(row=1, column=2)
 b_inputBrowse = Tk.Button(lf_files, text="...", command=inputFileChoose)
 b_inputBrowse.grid(row=1, column=3)
 
-#===============================================================================
-# Buttons
-print "Buttons"
-lf_options = Tk.LabelFrame(p_main, text="Options", padx=2, pady=2)
+
+
+# Options frame
+lf_options = Tk.LabelFrame(p_main, text="Get alpha channel from", padx=2, pady=2)
 p_main.add(lf_options)
 
-# Checkbox : no sound
+# Radiobutton group : way to get alpha
+alphaMode = Tk.IntVar()
+alphaMode.set( 1 )
+
+rb_fromColor = Tk.Radiobutton( lf_options, text="color", variable=alphaMode, value=1 )
+rb_fromColor.grid(row=1, column=1)
+b_fromBottomLeft = Tk.Button( lf_options, text="Get bottom left pixel color" )
+b_fromBottomLeft.grid(row=1, column=2)
+b_color = Tk.Button( lf_options, relief="sunken", bg=ALPHA_COLOR, command=changeAlphaColor )
+b_color.grid(row=1, column=3)
+
+
+rb_fromfile = Tk.Radiobutton( lf_options, text="file", variable=alphaMode, value=2 )
+rb_fromfile.grid(row=2, column=1)
+alphaFile = Tk.StringVar()
+alphaFile.set("C:\\")
+i_alphaFile = Tk.Entry(lf_options, textvariable=alphaFile)
+i_alphaFile.grid(row=2, column=2)
+b_alphaBrowse = Tk.Button(lf_options, text="...", command=inputFileChoose)
+b_alphaBrowse.grid(row=2, column=3)
+
+
+# Checkbox : to gif (soon to be obsolette)
 toGif = Tk.IntVar()
-ck_toGif = Tk.Checkbutton(lf_options, text="To GIF instead", variable=toGif)
+ck_toGif = Tk.Checkbutton(window, text="To GIF instead", variable=toGif)
 ck_toGif.pack()
 
 
-Tk.Button(lf_options, text="Transparentize", command=transparentize).pack()
-Tk.Button(lf_options, text="Quit", command=window.quit).pack()
+Tk.Button(window, text="Transparentize", command=transparentize).pack()
 
-print "mainloop"
 window.mainloop()

@@ -9,7 +9,9 @@ import Tkinter as Tk
 import tkFileDialog
 import tkColorChooser
 
+
 ALPHA_COLOR = "#FF00FF"
+
 
 def changeAlphaColor():
 	global ALPHA_COLOR
@@ -20,56 +22,91 @@ def changeAlphaColor():
 	print ALPHA_COLOR
 	
 
-def inputFileChoose ():
+
+def inputFileChoose ( var="" ):
 	filename = tkFileDialog.askopenfilename()
 	if len(filename) > 0:
-		print(filename)
-		inputFile.set(filename)
+		if isinstance( var, Tk.StringVar ) :
+			var.set(filename)
+	
+
 
 def transparentize() :
 	global ALPHA_COLOR
 	
-	# Default : pink
-	replacement = [ [255,0,255], (255, 0, 255, 0) ]
-	
-	# Load the asked color
-	replacement[0][0] = int( ALPHA_COLOR[1:3], 16 )
-	replacement[0][1] = int( ALPHA_COLOR[3:5], 16 )
-	replacement[0][2] = int( ALPHA_COLOR[5:7], 16 )
-	
-	replacement[1] = ( replacement[0][0], replacement[0][1], replacement[0][2], 0 )
-	
-	print replacement
-	
-	
+	mode = alphaMode.get()
 	imageName = inputFile.get()
-	print inputFile.get()
+	alphaName = alphaFile.get()
 	
 	
 	# Input image
 	img = Image.open(imageName)
 	img = img.convert("RGBA")
-	
-	
-	# Color switch
 	datas = img.getdata()
 	
-	newdata = []
-	for item in datas :
-		if item[0] == replacement[0][0] and item[1] == replacement[0][1] and item[2] == replacement[0][2] :
-			newdata.append( replacement[1] )
-		else :
-			newdata.append( item )
+	
+	print str(mode)+" : "+imageName
+	
+	# Color key
+	if mode == 1 :
+		print "Color key as alpha"
+		
+		# Default : pink
+		replacement = [ [255,0,255], (255, 0, 255, 0) ]
+		
+		# Load the asked color
+		replacement[0][0] = int( ALPHA_COLOR[1:3], 16 )
+		replacement[0][1] = int( ALPHA_COLOR[3:5], 16 )
+		replacement[0][2] = int( ALPHA_COLOR[5:7], 16 )
+		
+		replacement[1] = ( replacement[0][0], replacement[0][1], replacement[0][2], 0 )
+		
+		# Color keying
+		newdata = []
+		for item in datas :
+			if item[0] == replacement[0][0] and item[1] == replacement[0][1] and item[2] == replacement[0][2] :
+				newdata.append( replacement[1] )
+			else :
+				newdata.append( item )
+			
+		img.putdata(newdata)
+		
+	
+	# Image as alpha source
+	elif mode == 2 :
+		print "Alpha from image"
+		
+		# Input image
+		alpha = Image.open(alphaName)
+		alpha = alpha.convert("RGBA")
+		apix = alpha.load()
+		pix = img.load()
+		
+		# Alpha from file
+		newdata = []
+		for y in range( img.size[1] ) :
+			for x in range( img.size[0] ) :
+				R, G, B, A = pix[x,y]
+				
+				if (x < alpha.size[0]) and (y < alpha.size[1]) :
+					r, g, b, a = apix[x,y]
+					A = int( (a/255.) * ((r*0.3) + (g*0.5) + (b*0.2)) )
+				else :
+					A = 128
+				
+				pix[x,y] = (R,G,B,A)
+			
 		
 	
 	# Save
-	img.putdata(newdata)
-	if toGif.get() == False :
-		img.save(imageName+"_Alpha.png", 'PNG')
-	else :
-		print img.getpalette()
-		img.save(imageName+"_Alpha.gif", 'GIF', transparency=0)
+	if mode in [1, 2] :
+		if toGif.get() == False :
+			img.save(imageName[:-4]+"_Alpha.png", 'PNG')
+		else :
+			print img.getpalette()
+			img.save(imageName[:-4]+"_Alpha.gif", 'GIF', transparency=0)
 	
+
 
 #===============================================================================
 # GUI
@@ -89,7 +126,7 @@ inputFile.set("C:\\")
 Tk.Label(lf_files, text="Input file").grid(row=1, column=1)
 i_inputFile = Tk.Entry(lf_files, textvariable=inputFile)
 i_inputFile.grid(row=1, column=2)
-b_inputBrowse = Tk.Button(lf_files, text="...", command=inputFileChoose)
+b_inputBrowse = Tk.Button(lf_files, text="...", command=lambda: inputFileChoose(inputFile) )
 b_inputBrowse.grid(row=1, column=3)
 
 
@@ -116,7 +153,7 @@ alphaFile = Tk.StringVar()
 alphaFile.set("C:\\")
 i_alphaFile = Tk.Entry(lf_options, textvariable=alphaFile)
 i_alphaFile.grid(row=2, column=2)
-b_alphaBrowse = Tk.Button(lf_options, text="...", command=inputFileChoose)
+b_alphaBrowse = Tk.Button(lf_options, text="...", command=lambda: inputFileChoose(alphaFile))
 b_alphaBrowse.grid(row=2, column=3)
 
 

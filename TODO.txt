@@ -3,3 +3,5 @@
 
 [_]	Med	Fix the gif export
 [_]	Low	Fix the window size
+[_]	Med	GIF : Finir la conversion propre en parcourant la palette pour trouver la couleur clef
+[_]	Med	GIF : Remâcher l'image générée pour remplacer (avec moiré?) la couche alpha par une couleur pure pour la conversion

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+# Python 2.7
 # GUI to convert one color to transparent
 # Thx https://stackoverflow.com/questions/765736/using-pil-to-make-all-white-pixels-transparent?noredirect=1&lq=1
 
@@ -13,23 +13,35 @@ import tkColorChooser
 ALPHA_COLOR = "#FF00FF"
 
 
-def changeAlphaColor():
+def changeAlphaColor() :
 	global ALPHA_COLOR
 	
 	color = tkColorChooser.askcolor()
 	ALPHA_COLOR = color[1]
 	b_color.configure( background=ALPHA_COLOR )
-	print ALPHA_COLOR
 	
 
 
-def inputFileChoose ( var="" ):
+def inputFileChoose( var="" ) :
 	filename = tkFileDialog.askopenfilename()
 	if len(filename) > 0:
 		if isinstance( var, Tk.StringVar ) :
 			var.set(filename)
 	
 
+
+def getBLPixelColor( filename="" ) :
+	global ALPHA_COLOR
+	
+	img = Image.open( filename )
+	img = img.convert("RGB")
+	pix = img.load()
+	
+	c = pix[0,img.size[1]-1]
+	
+	ALPHA_COLOR = "#{R:0>2x}{G:0>2x}{B:0>2x}".format(R=c[0], G=c[1], B=c[2])
+	b_color.configure( background=ALPHA_COLOR )
+	
 
 def transparentize() :
 	global ALPHA_COLOR
@@ -45,7 +57,7 @@ def transparentize() :
 	datas = img.getdata()
 	
 	
-	print str(mode)+" : "+imageName
+	print imageName
 	
 	# Color key
 	if mode == 1 :
@@ -103,6 +115,8 @@ def transparentize() :
 		if toGif.get() == False :
 			img.save(imageName[:-4]+"_Alpha.png", 'PNG')
 		else :
+			# TODO : Finir la conversion propre en parcourant la palette pour trouver la couleur clef
+			# TODO : Remâcher l'image générée pour remplacer (avec moiré?) la couche alpha par une couleur pure pour la conversion
 			print img.getpalette()
 			img.save(imageName[:-4]+"_Alpha.gif", 'GIF', transparency=0)
 	
@@ -141,7 +155,7 @@ alphaMode.set( 1 )
 
 rb_fromColor = Tk.Radiobutton( lf_options, text="color", variable=alphaMode, value=1 )
 rb_fromColor.grid(row=1, column=1)
-b_fromBottomLeft = Tk.Button( lf_options, text="Get bottom left pixel color" )
+b_fromBottomLeft = Tk.Button( lf_options, text="Get bottom left pixel color", command=lambda: getBLPixelColor(inputFile.get()) )
 b_fromBottomLeft.grid(row=1, column=2)
 b_color = Tk.Button( lf_options, relief="sunken", bg=ALPHA_COLOR, command=changeAlphaColor )
 b_color.grid(row=1, column=3)

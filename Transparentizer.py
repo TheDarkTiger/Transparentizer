@@ -1,13 +1,14 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# Python 2.7
+#! C:\Python\Python37\python.exe
+#! coding: utf-8
+#! python3
+# Guillaume Viravau 2018-2019
 # GUI to convert one color to transparent
 # Thx https://stackoverflow.com/questions/765736/using-pil-to-make-all-white-pixels-transparent?noredirect=1&lq=1
 
 from PIL import Image, ImageDraw
-import Tkinter as Tk
-import tkFileDialog
-import tkColorChooser
+import tkinter as Tk
+import tkinter.filedialog
+import tkinter.colorchooser
 
 
 ALPHA_COLOR = "#FF00FF"
@@ -16,14 +17,14 @@ ALPHA_COLOR = "#FF00FF"
 def changeAlphaColor() :
 	global ALPHA_COLOR
 	
-	color = tkColorChooser.askcolor()
+	color = tkinter.colorchooser.askcolor()
 	ALPHA_COLOR = color[1]
 	b_color.configure( background=ALPHA_COLOR )
 	
 
 
 def inputFileChoose( var="" ) :
-	filename = tkFileDialog.askopenfilename()
+	filename = tkinter.filedialog.askopenfilename()
 	if len(filename) > 0:
 		if isinstance( var, Tk.StringVar ) :
 			var.set(filename)
@@ -57,11 +58,11 @@ def transparentize() :
 	datas = img.getdata()
 	
 	
-	print imageName
+	print( imageName )
 	
 	# Color key
 	if mode == 1 :
-		print "Color key as alpha"
+		print( "Color key as alpha" )
 		
 		# Default : pink
 		replacement = [ [255,0,255], (255, 0, 255, 0) ]
@@ -86,7 +87,7 @@ def transparentize() :
 	
 	# Image as alpha source
 	elif mode == 2 :
-		print "Alpha from image"
+		print( "Alpha from image" )
 		
 		# Input image
 		alpha = Image.open(alphaName)
@@ -117,7 +118,7 @@ def transparentize() :
 		else :
 			# TODO : Finir la conversion propre en parcourant la palette pour trouver la couleur clef
 			# TODO : Remâcher l'image générée pour remplacer (avec moiré?) la couche alpha par une couleur pure pour la conversion
-			print img.getpalette()
+			print( img.getpalette() )
 			img.save(imageName[:-4]+"_Alpha.gif", 'GIF', transparency=0)
 	
 
@@ -126,7 +127,7 @@ def transparentize() :
 # GUI
 
 window = Tk.Tk()
-print "Main"
+print( "Main" )
 p_main = Tk.PanedWindow(window, orient="vertical")
 p_main.pack(side="top", expand="yes", fill="both", padx=2, pady=2)
 

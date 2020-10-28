@@ -113,13 +113,19 @@ def transparentize() :
 	
 	# Save
 	if mode in [1, 2] :
+		# TODO : Utiliser une vrai fonction pour avoir le nom du fichier, pas un hack dégueux
+		if eraseOriginal.get() :
+			saveName = imageName[:-4]
+		else :
+			saveName = imageName[:-4]+"_Alpha"
+		
 		if toGif.get() == False :
-			img.save(imageName[:-4]+"_Alpha.png", 'PNG')
+			img.save(saveName+".png", 'PNG')
 		else :
 			# TODO : Finir la conversion propre en parcourant la palette pour trouver la couleur clef
 			# TODO : Remâcher l'image générée pour remplacer (avec moiré?) la couche alpha par une couleur pure pour la conversion
 			print( img.getpalette() )
-			img.save(imageName[:-4]+"_Alpha.gif", 'GIF', transparency=0)
+			img.save(saveName+".gif", 'GIF', transparency=0)
 	
 
 
@@ -176,6 +182,11 @@ b_alphaBrowse.grid(row=2, column=3)
 toGif = Tk.IntVar()
 ck_toGif = Tk.Checkbutton(window, text="To GIF instead", variable=toGif)
 ck_toGif.pack()
+
+# Checkbox : modify the original
+eraseOriginal = Tk.IntVar()
+ck_eraseOriginal = Tk.Checkbutton(window, text="Modify the original", variable=eraseOriginal)
+ck_eraseOriginal.pack()
 
 
 Tk.Button(window, text="Transparentize", command=transparentize).pack()

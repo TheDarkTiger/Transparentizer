@@ -78,9 +78,15 @@ def transparentize() :
 		newdata = []
 		for item in datas :
 			if item[0] == replacement[0][0] and item[1] == replacement[0][1] and item[2] == replacement[0][2] :
-				newdata.append( replacement[1] )
+				if invertAlpha.get() :
+					newdata.append( item )
+				else :
+					newdata.append( replacement[1] )
 			else :
-				newdata.append( item )
+				if invertAlpha.get() :
+					newdata.append( replacement[1] )
+				else :
+					newdata.append( item )
 			
 		img.putdata(newdata)
 		
@@ -107,6 +113,9 @@ def transparentize() :
 				else :
 					A = 128
 				
+				if invertAlpha.get() :
+					A = 255-A
+				
 				pix[x,y] = (R,G,B,A)
 			
 		
@@ -124,6 +133,9 @@ def transparentize() :
 			for x in range( img.size[0] ) :
 				R, G, B, A = pix[x,y]
 				A = int( (R*0.3) + (G*0.5) + (B*0.2) )
+				
+				if invertAlpha.get() :
+					A = 255-A
 				
 				pix[x,y] = (R,G,B,A)
 			
@@ -210,6 +222,10 @@ eraseOriginal = Tk.IntVar()
 ck_eraseOriginal = Tk.Checkbutton(window, text="Modify the original", variable=eraseOriginal)
 ck_eraseOriginal.pack()
 
+# Checkbox : invert alpha
+invertAlpha = Tk.IntVar()
+ck_invertAlpha = Tk.Checkbutton(window, text="Invert alpha", variable=invertAlpha)
+ck_invertAlpha.pack()
 
 Tk.Button(window, text="Transparentize", command=transparentize).pack()
 

@@ -6,3 +6,4 @@
 [_]	Med	GIF : Finir la conversion propre en parcourant la palette pour trouver la couleur clef
 [_]	Med	GIF : Remâcher l'image générée pour remplacer (avec moiré?) la couche alpha par une couleur pure pour la conversion
 [_]	Med	Fichiers : Utiliser une vraie fonction pour avoir le nom du fichier, pas un hack dégueux
+[_]	Low	Programme : Ajouter des paramètres en ligne de commande

@@ -111,8 +111,26 @@ def transparentize() :
 			
 		
 	
+	# Itself as alpha source
+	elif mode == 3 :
+		print( "Alpha from itself" )
+		
+		# Input image
+		pix = img.load()
+		
+		# Alpha from file
+		newdata = []
+		for y in range( img.size[1] ) :
+			for x in range( img.size[0] ) :
+				R, G, B, A = pix[x,y]
+				A = int( (R*0.3) + (G*0.5) + (B*0.2) )
+				
+				pix[x,y] = (R,G,B,A)
+			
+		
+	
 	# Save
-	if mode in [1, 2] :
+	if mode in [1, 2, 3] :
 		# TODO : Utiliser une vrai fonction pour avoir le nom du fichier, pas un hack dégueux
 		if eraseOriginal.get() :
 			saveName = imageName[:-4]
@@ -176,6 +194,10 @@ i_alphaFile = Tk.Entry(lf_options, textvariable=alphaFile)
 i_alphaFile.grid(row=2, column=2)
 b_alphaBrowse = Tk.Button(lf_options, text="...", command=lambda: inputFileChoose(alphaFile))
 b_alphaBrowse.grid(row=2, column=3)
+
+rb_fromfile = Tk.Radiobutton( lf_options, text="itself", variable=alphaMode, value=3 )
+rb_fromfile.grid(row=3, column=1)
+Tk.Label(lf_options, text="(Uses the image greyscale as alpha)").grid(row=3, column=2)
 
 
 # Checkbox : to gif (soon to be obsolette)

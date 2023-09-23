@@ -1,4 +1,4 @@
-#! C:\Python\Python37\python.exe
+#!/usr/bin/env python
 #! coding: utf-8
 #! python3
 # Guillaume Viravau 2018-2019

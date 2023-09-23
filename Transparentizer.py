@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #! coding: utf-8
 #! python3
-# Guillaume Viravau 2018-2019
+# Guillaume Viravau 2018-2023
 # GUI to convert one color to transparent
 # Thx https://stackoverflow.com/questions/765736/using-pil-to-make-all-white-pixels-transparent?noredirect=1&lq=1
 
@@ -60,89 +60,106 @@ def transparentize() :
 	
 	print( imageName )
 	
-	# Color key
-	if mode == 1 :
-		print( "Color key as alpha" )
-		
-		# Default : pink
-		replacement = [ [255,0,255], (255, 0, 255, 0) ]
-		
-		# Load the asked color
-		replacement[0][0] = int( ALPHA_COLOR[1:3], 16 )
-		replacement[0][1] = int( ALPHA_COLOR[3:5], 16 )
-		replacement[0][2] = int( ALPHA_COLOR[5:7], 16 )
-		
-		replacement[1] = ( replacement[0][0], replacement[0][1], replacement[0][2], 0 )
-		
-		# Color keying
-		newdata = []
-		for item in datas :
-			if item[0] == replacement[0][0] and item[1] == replacement[0][1] and item[2] == replacement[0][2] :
-				if invertAlpha.get() :
-					newdata.append( item )
-				else :
-					newdata.append( replacement[1] )
-			else :
-				if invertAlpha.get() :
-					newdata.append( replacement[1] )
-				else :
-					newdata.append( item )
-			
-		img.putdata(newdata)
-		
-	
-	# Image as alpha source
-	elif mode == 2 :
-		print( "Alpha from image" )
-		
-		# Input image
-		alpha = Image.open(alphaName)
-		alpha = alpha.convert("RGBA")
-		apix = alpha.load()
+	if extraxtAlpha.get() :
+		mode = 0
+		print( "Extract alpha" )
 		pix = img.load()
-		
-		# Alpha from file
+			
+		# Extract alpha
 		newdata = []
 		for y in range( img.size[1] ) :
 			for x in range( img.size[0] ) :
 				R, G, B, A = pix[x,y]
 				
-				if (x < alpha.size[0]) and (y < alpha.size[1]) :
-					r, g, b, a = apix[x,y]
-					A = int( (a/255.) * ((r*0.3) + (g*0.5) + (b*0.2)) )
+				if invertAlpha.get() :
+					A = 255-A
+				
+				pix[x,y] = (A,A,A,255)
+		
+	else :
+		# Color key
+		if mode == 1 :
+			print( "Color key as alpha" )
+			
+			# Default : pink
+			replacement = [ [255,0,255], (255, 0, 255, 0) ]
+			
+			# Load the asked color
+			replacement[0][0] = int( ALPHA_COLOR[1:3], 16 )
+			replacement[0][1] = int( ALPHA_COLOR[3:5], 16 )
+			replacement[0][2] = int( ALPHA_COLOR[5:7], 16 )
+			
+			replacement[1] = ( replacement[0][0], replacement[0][1], replacement[0][2], 0 )
+			
+			# Color keying
+			newdata = []
+			for item in datas :
+				if item[0] == replacement[0][0] and item[1] == replacement[0][1] and item[2] == replacement[0][2] :
+					if invertAlpha.get() :
+						newdata.append( item )
+					else :
+						newdata.append( replacement[1] )
 				else :
-					A = 128
+					if invertAlpha.get() :
+						newdata.append( replacement[1] )
+					else :
+						newdata.append( item )
 				
-				if invertAlpha.get() :
-					A = 255-A
-				
-				pix[x,y] = (R,G,B,A)
+			img.putdata(newdata)
 			
 		
-	
-	# Itself as alpha source
-	elif mode == 3 :
-		print( "Alpha from itself" )
-		
-		# Input image
-		pix = img.load()
-		
-		# Alpha from file
-		newdata = []
-		for y in range( img.size[1] ) :
-			for x in range( img.size[0] ) :
-				R, G, B, A = pix[x,y]
-				A = int( (R*0.3) + (G*0.5) + (B*0.2) )
+		# Image as alpha source
+		elif mode == 2 :
+			print( "Alpha from image" )
+			
+			# Input image
+			alpha = Image.open(alphaName)
+			alpha = alpha.convert("RGBA")
+			apix = alpha.load()
+			pix = img.load()
+			
+			# Alpha from file
+			newdata = []
+			for y in range( img.size[1] ) :
+				for x in range( img.size[0] ) :
+					R, G, B, A = pix[x,y]
+					
+					if (x < alpha.size[0]) and (y < alpha.size[1]) :
+						r, g, b, a = apix[x,y]
+						A = int( (a/255.) * ((r*0.3) + (g*0.5) + (b*0.2)) )
+					else :
+						A = 128
+					
+					if invertAlpha.get() :
+						A = 255-A
+					
+					pix[x,y] = (R,G,B,A)
 				
-				if invertAlpha.get() :
-					A = 255-A
-				
-				pix[x,y] = (R,G,B,A)
 			
 		
-	
+		# Itself as alpha source
+		elif mode == 3 :
+			print( "Alpha from itself" )
+			
+			# Input image
+			pix = img.load()
+			
+			# Alpha from file
+			newdata = []
+			for y in range( img.size[1] ) :
+				for x in range( img.size[0] ) :
+					R, G, B, A = pix[x,y]
+					A = int( (R*0.3) + (G*0.5) + (B*0.2) )
+					
+					if invertAlpha.get() :
+						A = 255-A
+					
+					pix[x,y] = (R,G,B,A)
+				
+			
+		
 	# Save
-	if mode in [1, 2, 3] :
+	if mode in [0, 1, 2, 3] :
 		# TODO : Utiliser une vrai fonction pour avoir le nom du fichier, pas un hack dégueux
 		if eraseOriginal.get() :
 			saveName = imageName[:-4]
@@ -226,6 +243,11 @@ ck_eraseOriginal.pack()
 invertAlpha = Tk.IntVar()
 ck_invertAlpha = Tk.Checkbutton(window, text="Invert alpha", variable=invertAlpha)
 ck_invertAlpha.pack()
+
+# Checkbox : extract alpha instead
+extraxtAlpha = Tk.IntVar()
+ck_extraxtAlpha = Tk.Checkbutton(window, text="Extract alpha instead", variable=extraxtAlpha)
+ck_extraxtAlpha.pack()
 
 Tk.Button(window, text="Transparentize", command=transparentize).pack()
 
